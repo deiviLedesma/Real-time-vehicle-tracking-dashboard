@@ -1,0 +1,84 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Página-1" id="_oAdPO8RmCH2oaMraMR2">
+    <mxGraphModel dx="1422" dy="798" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <!-- Nodo A: Servidor Central Mina -->
+        <mxCell id="node_a" value="&lt;b&gt;Servidor Central Mina&lt;/b&gt;" style="shape=cube;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;darkOpacity=0.05;darkOpacity2=0.1;verticalAlign=top;align=center;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="280" y="240" width="300" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="art_a1" value="«artifact»&#xa;SistemaCentralMVTS.jar" style="html=1;dropTarget=0;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="310" y="290" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="art_a1_icon" value="" style="shape=module;jet=1;html=1;" vertex="1" parent="art_a1">
+          <mxGeometry x="1" width="20" height="20" relative="1" as="geometry">
+            <mxPoint x="-27" y="7" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="art_a2" value="«artifact»&#xa;Base de Datos H2 / Postgres" style="html=1;dropTarget=0;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="310" y="350" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="art_a2_icon" value="" style="shape=module;jet=1;html=1;" vertex="1" parent="art_a2">
+          <mxGeometry x="1" width="20" height="20" relative="1" as="geometry">
+            <mxPoint x="-27" y="7" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="art_a3" value="«artifact»&#xa;Broker MQTT (Mosquitto)" style="html=1;dropTarget=0;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="310" y="410" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="art_a3_icon" value="" style="shape=module;jet=1;html=1;" vertex="1" parent="art_a3">
+          <mxGeometry x="1" width="20" height="20" relative="1" as="geometry">
+            <mxPoint x="-27" y="7" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <!-- Nodo B: Unidad a Bordo - Vehículo -->
+        <mxCell id="node_b" value="&lt;b&gt;Unidad a Bordo - Vehículo&lt;/b&gt;" style="shape=cube;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;darkOpacity=0.05;darkOpacity2=0.1;verticalAlign=top;align=center;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="20" y="300" width="180" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="art_b1" value="«artifact»&#xa;SimuladorVehiculo.jar" style="html=1;dropTarget=0;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="40" y="360" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="art_b1_icon" value="" style="shape=module;jet=1;html=1;" vertex="1" parent="art_b1">
+          <mxGeometry x="1" width="20" height="20" relative="1" as="geometry">
+            <mxPoint x="-27" y="7" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <!-- Nodo C: Controlador de Semáforo IoT -->
+        <mxCell id="node_c" value="&lt;b&gt;Controlador de Semáforo IoT&lt;/b&gt;" style="shape=cube;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;darkOpacity=0.05;darkOpacity2=0.1;verticalAlign=top;align=center;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="660" y="300" width="180" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="art_c1" value="«artifact»&#xa;SimuladorSemaforo.jar" style="html=1;dropTarget=0;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="680" y="360" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="art_c1_icon" value="" style="shape=module;jet=1;html=1;" vertex="1" parent="art_c1">
+          <mxGeometry x="1" width="20" height="20" relative="1" as="geometry">
+            <mxPoint x="-27" y="7" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <!-- Nodo D: PC de Gerencia / Operador -->
+        <mxCell id="node_d" value="&lt;b&gt;PC de Gerencia / Operador&lt;/b&gt;" style="shape=cube;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;darkOpacity=0.05;darkOpacity2=0.1;verticalAlign=top;align=center;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="330" y="40" width="200" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="art_d1" value="«artifact»&#xa;Navegador Web / Dashboard" style="html=1;dropTarget=0;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="350" y="90" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="art_d1_icon" value="" style="shape=module;jet=1;html=1;" vertex="1" parent="art_d1">
+          <mxGeometry x="1" width="20" height="20" relative="1" as="geometry">
+            <mxPoint x="-27" y="7" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <!-- Enlaces de Comunicación -->
+        <mxCell id="link_ba" value="«TCP/IP» MQTT / HTTP" style="endArrow=none;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;labelBackgroundColor=none;" edge="1" parent="1" source="node_b" target="node_a">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="link_ca" value="«TCP/IP» MQTT" style="endArrow=none;html=1;rounded=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;labelBackgroundColor=none;" edge="1" parent="1" source="node_c" target="node_a">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="link_da" value="«TCP/IP» HTTP" style="endArrow=none;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;labelBackgroundColor=none;" edge="1" parent="1" source="node_d" target="node_a">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

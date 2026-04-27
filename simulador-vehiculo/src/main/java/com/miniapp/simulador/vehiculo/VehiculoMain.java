@@ -18,7 +18,7 @@ public class VehiculoMain {
         
         // Intentar avisar al servidor que el camión arrancó
         try {
-            java.net.URL url = new java.net.URL("http://localhost:8080/api/reportes/hola");
+            java.net.URL url = new java.net.URL("http://localhost:8081/api/reportes/hola");
             java.net.HttpURLConnection con = (java.net.HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
 

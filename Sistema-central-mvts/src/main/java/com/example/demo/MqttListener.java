@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 public class MqttListener {
 
     @Autowired
-    private PosicionRepository repository; // La herramienta para guardar en H2
+    private PosicionRepository repository;
 
     private final String BROKER = "tcp://broker.hivemq.com:1883";
 
@@ -37,19 +37,12 @@ public class MqttListener {
                     System.out.println("Procesando: " + payload);
 
                     try {
-                        // LÓGICA PARA EXTRAER DATOS REALES
-                        // El mensaje es: "Lat: -27.3532, Lon: -70.33"
                         String[] partes = payload.split(",");
                         double lat = Double.parseDouble(partes[0].replace("Lat: ", "").trim());
                         double lon = Double.parseDouble(partes[1].replace("Lon: ", "").trim());
-
-                        // Crear el objeto con datos REALES del camión
-                        // Extraemos el ID del camión del tópico (mina/vehiculo/1/posicion)
                         String vehiculoId = topic.split("/")[2]; 
 
                         PosicionVehiculo nuevaPos = new PosicionVehiculo(vehiculoId, lat, lon);
-                        
-                        // GUARDAR EN BASE DE DATOS
                         repository.save(nuevaPos);
                         
                         System.out.println("¡ÉXITO! Guardado en DB: Vehículo " + vehiculoId + " en (" + lat + ", " + lon + ")");

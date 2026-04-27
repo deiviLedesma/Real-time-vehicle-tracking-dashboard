@@ -17,8 +17,8 @@ import java.time.LocalDateTime;
 @Entity 
 public class PosicionVehiculo {
 
-    @Id // Define la llave primaria
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // ID autoincremental
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) 
     private Long id;
 
     private String vehiculoId;
@@ -26,11 +26,9 @@ public class PosicionVehiculo {
     private Double longitud;
     private LocalDateTime fechaHora;
 
-    // Constructor vacío 
     public PosicionVehiculo() {
     }
 
-    // Constructor para usar en el MqttListener
     public PosicionVehiculo(String vehiculoId, Double latitud, Double longitud) {
         this.vehiculoId = vehiculoId;
         this.latitud = latitud;
@@ -76,7 +74,5 @@ public class PosicionVehiculo {
 
     public void setFechaHora(LocalDateTime fechaHora) {
         this.fechaHora = fechaHora;
-    }
-
-    
+    } 
 }

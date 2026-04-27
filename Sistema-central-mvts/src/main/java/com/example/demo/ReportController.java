@@ -25,7 +25,6 @@ public class ReportController {
 
     @GetMapping("/ultima-posicion")
     public List<PosicionVehiculo> obtenerUltimas() {
-        // Retorna las últimas 10 posiciones registradas
         return repository.findAll();
     }
 }

@@ -1,0 +1,100 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Página-1" id="0hNuUl0sUG2pI5pk6XdB">
+    <mxGraphModel dx="861" dy="661" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="A" parent="1" style="html=1;dropTarget=0;whiteSpace=wrap;align=center;verticalAlign=top;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1" value="«component»&#xa;SimuladorVehiculo&#xa;(Cliente Java)" vertex="1">
+          <mxGeometry height="200" width="220" x="40" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="A1" parent="A" style="html=1;whiteSpace=wrap;" value="GPS-Emulator" vertex="1">
+          <mxGeometry height="30" width="150" x="35" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="A2" parent="A" style="html=1;whiteSpace=wrap;" value="MQTT-Client" vertex="1">
+          <mxGeometry height="30" width="150" x="35" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="A3" parent="A" style="html=1;whiteSpace=wrap;" value="HTTP-Client" vertex="1">
+          <mxGeometry height="30" width="150" x="35" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="B" parent="1" style="html=1;dropTarget=0;whiteSpace=wrap;align=center;verticalAlign=top;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" value="«component»&#xa;SistemaCentralMVTS&#xa;(Servidor Spring Boot)" vertex="1">
+          <mxGeometry height="300" width="280" x="440" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="B1" parent="B" style="html=1;whiteSpace=wrap;" value="TrafficAnalyzer" vertex="1">
+          <mxGeometry height="30" width="150" x="65" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="B2" parent="B" style="html=1;whiteSpace=wrap;" value="NotificationService" vertex="1">
+          <mxGeometry height="30" width="150" x="65" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="B3" parent="B" style="html=1;whiteSpace=wrap;" value="ReportController" vertex="1">
+          <mxGeometry height="30" width="150" x="65" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="B4" parent="B" style="html=1;whiteSpace=wrap;" value="TrafficLightController" vertex="1">
+          <mxGeometry height="30" width="150" x="65" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="C" parent="1" style="html=1;dropTarget=0;whiteSpace=wrap;align=center;verticalAlign=top;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1" value="«component»&#xa;SimuladorSemaforo&#xa;(Cliente Java)" vertex="1">
+          <mxGeometry height="140" width="200" x="880" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="C1" parent="C" style="html=1;whiteSpace=wrap;" value="StatusManager" vertex="1">
+          <mxGeometry height="30" width="150" x="25" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="C2" parent="C" style="html=1;whiteSpace=wrap;" value="MQTT-Listener" vertex="1">
+          <mxGeometry height="30" width="150" x="25" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="L1_Lollipop" parent="1" style="shape=ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#ffffff;strokeColor=#000000;" value="IMQTT_Sub" vertex="1">
+          <mxGeometry height="20" width="20" x="420" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="L1_Socket" parent="1" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.arc;startAngle=0.3;endAngle=0.7;fillColor=none;strokeColor=#000000;rotation=180" value="" vertex="1">
+          <mxGeometry height="30" width="30" x="260" y="85" as="geometry" />
+        </mxCell>
+        <mxCell id="L1_Label" parent="1" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" value="IMQTT_Pub" vertex="1">
+          <mxGeometry height="30" width="80" x="240" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="L1_Line" edge="1" parent="1" source="A2" style="endArrow=none;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;labelBackgroundColor=none;" target="L1_Socket" value="Telemetría (MQTT)">
+          <mxGeometry height="50" relative="1" width="50" as="geometry" />
+        </mxCell>
+        <mxCell id="L1_Connect" edge="1" parent="1" source="L1_Socket" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" target="L1_Lollipop" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry" />
+        </mxCell>
+        <mxCell id="L2_Lollipop" parent="1" style="shape=ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#ffffff;strokeColor=#000000;" value="IRestApi" vertex="1">
+          <mxGeometry height="20" width="20" x="420" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="L2_Socket" parent="1" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.arc;startAngle=0.3;endAngle=0.7;fillColor=none;strokeColor=#000000;rotation=180" value="" vertex="1">
+          <mxGeometry height="30" width="30" x="260" y="205" as="geometry" />
+        </mxCell>
+        <mxCell id="L2_Label" parent="1" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" value="IRestClient" vertex="1">
+          <mxGeometry height="30" width="80" x="240" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="L2_Line" edge="1" parent="1" source="A3" style="endArrow=none;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;labelBackgroundColor=none;" target="L2_Socket" value="Reportes (HTTP)">
+          <mxGeometry height="50" relative="1" width="50" as="geometry" />
+        </mxCell>
+        <mxCell id="L2_Connect" edge="1" parent="1" source="L2_Socket" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" target="L2_Lollipop" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_Lollipop" parent="1" style="shape=ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#ffffff;strokeColor=#000000;" value="ITrafficControl" vertex="1">
+          <mxGeometry height="20" width="20" x="720" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_Socket" parent="1" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.arc;startAngle=0.3;endAngle=0.7;fillColor=none;strokeColor=#000000;rotation=0" value="" vertex="1">
+          <mxGeometry height="30" width="30" x="850" y="205" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_Line" edge="1" parent="1" source="B4" style="endArrow=none;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;labelBackgroundColor=none;" target="L3_Lollipop" value="Control Bidireccional">
+          <mxGeometry height="50" relative="1" width="50" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_Connect" edge="1" parent="1" source="L3_Socket" style="endArrow=none;html=1;rounded=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" target="L3_Lollipop" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry" />
+        </mxCell>
+        <mxCell id="L3_SocketLine" edge="1" parent="1" source="L3_Socket" style="endArrow=none;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="C2" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry" />
+        </mxCell>
+        <mxCell id="xYAt99F4OFSQQdcPpTsg-1" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="TCP/IP" vertex="1">
+          <mxGeometry height="30" width="60" x="300" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="xYAt99F4OFSQQdcPpTsg-2" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="TCP/IP" vertex="1">
+          <mxGeometry height="30" width="60" x="310" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="xYAt99F4OFSQQdcPpTsg-3" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="TCP/IP" vertex="1">
+          <mxGeometry height="30" width="60" x="780" y="190" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

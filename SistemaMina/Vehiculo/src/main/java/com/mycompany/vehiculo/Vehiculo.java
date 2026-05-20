@@ -1,5 +1,6 @@
 package com.mycompany.vehiculo;
 
+import java.util.Locale;
 import java.util.UUID;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
@@ -28,19 +29,26 @@ public class Vehiculo {
             publisher.connect(options);
             System.out.println("Vehiculo " + idVehiculo + " conectado a RabbitMQ.");
 
-            while (true) {
-                double latSimulada = 27.48 + (Math.random() * 0.005);
-                double lonSimulada = -109.93 + (Math.random() * 0.005);
+            // Coordenadas iniciales
+            double latActual = 27.4841; 
+            double lonActual = -109.9300;
 
-                String payload = String.format(
-                        "{\"lat\": %.4f, \"lon\": %.4f, \"id\": \"%s\"}",
-                        latSimulada,
-                        lonSimulada,
-                        idVehiculo);
+            while (true) {
+                // Avanzar un poquito hacia el NORTE
+                latActual += 0.00002; 
+                long timestamp = System.currentTimeMillis();
+
+                String payload = String.format(Locale.US,
+                        "{\"latitud\": %.6f, \"longitud\": %.6f, \"id\": \"%s\", \"timestamp\": %d}",
+                        latActual,
+                        lonActual,
+                        idVehiculo,
+                        timestamp);
 
                 if (publisher.isConnected()) {
                     MqttMessage msgPosicion = new MqttMessage(payload.getBytes());
                     msgPosicion.setQos(0);
+                    // topic "mineria/vehiculos/posicion" en cola es "mineria.vehiculos.posicion"
                     publisher.publish("mineria/vehiculos/posicion", msgPosicion);
 
                     MqttMessage msgPersistencia = new MqttMessage("hierro cargamento".getBytes());
@@ -49,7 +57,7 @@ public class Vehiculo {
                     String topicPersistencia = "mina/vehiculos/descarga/" + idVehiculo;
                     publisher.publish(topicPersistencia, msgPersistencia);
 
-                    System.out.println("Enviado -> Posicion: " + payload + " | Persistencia: " + topicPersistencia);
+                    System.out.println("Enviado -> Posicion: " + payload);
                 } else {
                     System.out.println("Sin senal... posicion perdida.");
                 }

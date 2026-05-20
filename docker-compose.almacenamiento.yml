@@ -1,0 +1,207 @@
+name: mvts-almacenamiento
+
+services:
+  mongo-configsvr:
+    image: mongo:7
+    command:
+      - mongod
+      - --configsvr
+      - --replSet
+      - configReplSet
+      - --bind_ip_all
+      - --port
+      - "27019"
+    restart: unless-stopped
+    volumes:
+      - mongo-configsvr-data:/data/db
+    networks:
+      - almacenamiento-net
+
+  mongo-shard1:
+    image: mongo:7
+    command:
+      - mongod
+      - --shardsvr
+      - --replSet
+      - shard1ReplSet
+      - --bind_ip_all
+      - --port
+      - "27018"
+    restart: unless-stopped
+    volumes:
+      - mongo-shard1-data:/data/db
+    networks:
+      - almacenamiento-net
+
+  mongo-shard2:
+    image: mongo:7
+    command:
+      - mongod
+      - --shardsvr
+      - --replSet
+      - shard2ReplSet
+      - --bind_ip_all
+      - --port
+      - "27018"
+    restart: unless-stopped
+    volumes:
+      - mongo-shard2-data:/data/db
+    networks:
+      - almacenamiento-net
+
+  mongo-router:
+    image: mongo:7
+    command:
+      - mongos
+      - --configdb
+      - configReplSet/mongo-configsvr:27019
+      - --bind_ip_all
+      - --port
+      - "27017"
+    restart: unless-stopped
+    depends_on:
+      - mongo-configsvr
+      - mongo-shard1
+      - mongo-shard2
+    ports:
+      - "27017:27017"
+    networks:
+      - almacenamiento-net
+
+  mongo-setup:
+    image: mongo:7
+    profiles:
+      - setup
+    restart: "no"
+    depends_on:
+      - mongo-configsvr
+      - mongo-shard1
+      - mongo-shard2
+      - mongo-router
+    volumes:
+      - ./mongo/setup-sharding.sh:/scripts/setup-sharding.sh:ro
+    entrypoint:
+      - /bin/sh
+      - -c
+      - tr -d '\r' < /scripts/setup-sharding.sh > /tmp/setup-sharding.sh && chmod +x /tmp/setup-sharding.sh && /bin/sh /tmp/setup-sharding.sh
+    networks:
+      - almacenamiento-net
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    restart: unless-stopped
+    command:
+      - start-dev
+      - --import-realm
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin123
+    ports:
+      - "8180:8080"
+    volumes:
+      - ./keycloak/realm-mvts.json:/opt/keycloak/data/import/realm-mvts.json:ro
+    networks:
+      - almacenamiento-net
+
+  almacenamiento-e-1:
+    build:
+      context: ./SistemaMina
+      dockerfile: AlmacenamientoE/Dockerfile
+    restart: unless-stopped
+    environment:
+      HTTP_PORT: 8086
+      MONGODB_URL: mongodb://mongo-router:27017
+      MONGODB_DATABASE: mvts_almacenamiento
+      RABBITMQ_HOST: mvts-rabbit-aislado
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: mvts
+      RABBITMQ_PASS: mvts123
+    ports:
+      - "8086:8086"
+    depends_on:
+      - mongo-router
+    networks:
+      - almacenamiento-net
+      - backbone-net
+
+  almacenamiento-e-2:
+    build:
+      context: ./SistemaMina
+      dockerfile: AlmacenamientoE/Dockerfile
+    restart: unless-stopped
+    environment:
+      HTTP_PORT: 8086
+      MONGODB_URL: mongodb://mongo-router:27017
+      MONGODB_DATABASE: mvts_almacenamiento
+      RABBITMQ_HOST: mvts-rabbit-aislado
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: mvts
+      RABBITMQ_PASS: mvts123
+    depends_on:
+      - mongo-router
+    networks:
+      - almacenamiento-net
+      - backbone-net
+
+  almacenamiento-l-1:
+    build:
+      context: ./SistemaMina
+      dockerfile: AlmacenamientoL/Dockerfile
+    restart: unless-stopped
+    environment:
+      HTTP_PORT: 8085
+      MONGODB_URL: mongodb://mongo-router:27017
+      MONGODB_DATABASE: mvts_almacenamiento
+      KEYCLOAK_AUTH_URL: http://keycloak:8080/realms/mvts
+      KEYCLOAK_CLIENT_ID: almacenamiento-l
+    ports:
+      - "8085:8085"
+    depends_on:
+      - mongo-router
+      - keycloak
+    networks:
+      - almacenamiento-net
+
+  almacenamiento-l-2:
+    build:
+      context: ./SistemaMina
+      dockerfile: AlmacenamientoL/Dockerfile
+    restart: unless-stopped
+    environment:
+      HTTP_PORT: 8085
+      MONGODB_URL: mongodb://mongo-router:27017
+      MONGODB_DATABASE: mvts_almacenamiento
+      KEYCLOAK_AUTH_URL: http://keycloak:8080/realms/mvts
+      KEYCLOAK_CLIENT_ID: almacenamiento-l
+    depends_on:
+      - mongo-router
+      - keycloak
+    networks:
+      - almacenamiento-net
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - almacenamiento-e-1
+      - almacenamiento-e-2
+      - almacenamiento-l-1
+      - almacenamiento-l-2
+    ports:
+      - "80:80"
+    networks:
+      - almacenamiento-net
+
+networks:
+  almacenamiento-net:
+    driver: bridge
+  backbone-net:
+    external: true
+    name: mvts-backbone-net
+
+volumes:
+  mongo-configsvr-data:
+  mongo-shard1-data:
+  mongo-shard2-data:

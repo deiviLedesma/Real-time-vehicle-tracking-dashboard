@@ -25,7 +25,10 @@ public class EstacionCentral {
 
     public static void main(String[] argv) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("localhost");
+        factory.setHost(System.getenv().getOrDefault("RABBITMQ_HOST", "localhost"));
+        factory.setPort(Integer.parseInt(System.getenv().getOrDefault("RABBITMQ_PORT", "5672")));
+        factory.setUsername(System.getenv().getOrDefault("RABBITMQ_USER", "guest"));
+        factory.setPassword(System.getenv().getOrDefault("RABBITMQ_PASS", "guest"));
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 

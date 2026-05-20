@@ -7,6 +7,10 @@ import java.net.http.HttpResponse;
 
 public class Gerencia {
 
+    private static final String ALMACENAMIENTO_URL = System.getenv().getOrDefault(
+            "ALMACENAMIENTO_URL",
+            "http://localhost:8085/api/historial/congestiones");
+
     public static void main(String[] args) {
         pedirHistorialCongestiones();
     }
@@ -15,23 +19,23 @@ public class Gerencia {
         try {
             HttpClient cliente = HttpClient.newHttpClient();
 
-            // petición GET a puerto 8085
             HttpRequest peticion = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:8085/api/historial/congestiones"))
+                    .uri(URI.create(ALMACENAMIENTO_URL))
                     .GET()
                     .build();
 
-            // esperamos un JSON
-            HttpResponse<String> respuesta = cliente.send(peticion, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> respuesta = cliente.send(
+                    peticion,
+                    HttpResponse.BodyHandlers.ofString());
 
             if (respuesta.statusCode() == 200) {
-                System.out.println(" [✓] Datos recibidos: " + respuesta.body());
+                System.out.println(" [OK] Datos recibidos: " + respuesta.body());
             } else {
-                System.out.println(" [X] Error del servidor. Código HTTP: " + respuesta.statusCode());
+                System.out.println(" [X] Error del servidor. Codigo HTTP: " + respuesta.statusCode());
             }
 
         } catch (Exception e) {
-            System.err.println(" [X] No se pudo conectar al servidor Quarkus.");
+            System.err.println(" [X] No se pudo conectar al servicio de almacenamiento.");
             e.printStackTrace();
         }
     }

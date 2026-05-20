@@ -82,7 +82,8 @@ services:
       - ./mongo/setup-sharding.sh:/scripts/setup-sharding.sh:ro
     entrypoint:
       - /bin/sh
-      - /scripts/setup-sharding.sh
+      - -c
+      - tr -d '\r' < /scripts/setup-sharding.sh > /tmp/setup-sharding.sh && chmod +x /tmp/setup-sharding.sh && /bin/sh /tmp/setup-sharding.sh
     networks:
       - almacenamiento-net
 

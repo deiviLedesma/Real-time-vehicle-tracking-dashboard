@@ -6,6 +6,9 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class Semaforo implements MqttCallback {
 
@@ -15,7 +18,11 @@ public class Semaforo implements MqttCallback {
     private static final String MQTT_PASSWORD = System.getenv().getOrDefault("MQTT_PASSWORD", "guest");
 
     private final String idSemaforo = System.getenv().getOrDefault("SEMAFORO_ID", "01");
+    private final int autoToggleSeconds = parsePositiveInt(
+            System.getenv().getOrDefault("AUTO_TOGGLE_SECONDS", "10"), 10);
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private MqttClient client;
+    private volatile String estadoActual = "ROJO";
 
     public Semaforo() {
         try {
@@ -37,6 +44,8 @@ public class Semaforo implements MqttCallback {
             System.out.println("Semaforo " + idSemaforo + " conectado a RabbitMQ.");
 
             client.subscribe("semaforos/" + idSemaforo + "/comandos", 1);
+            enviarEstado("ROJO");
+            iniciarAlternanciaAutomatica();
 
         } catch (MqttException e) {
             e.printStackTrace();
@@ -65,6 +74,7 @@ public class Semaforo implements MqttCallback {
 
             String topicEstado = "semaforos/" + idSemaforo + "/estado";
             client.publish(topicEstado, mensaje);
+            estadoActual = estado;
             System.out.println("Estado actualizado enviado a RabbitMQ: " + estado);
 
         } catch (MqttException e) {
@@ -82,7 +92,28 @@ public class Semaforo implements MqttCallback {
     }
 
     public static void main(String[] args) {
-        Semaforo semaforo = new Semaforo();
-        semaforo.enviarEstado("ROJO");
+        new Semaforo();
+    }
+
+    private void iniciarAlternanciaAutomatica() {
+        scheduler.scheduleAtFixedRate(() -> {
+            try {
+                String siguienteEstado = "ROJO".equals(estadoActual) ? "VERDE" : "ROJO";
+                System.out.println("Alternancia automatica: cambiando a " + siguienteEstado + "...");
+                enviarEstado(siguienteEstado);
+            } catch (Exception e) {
+                System.out.println("Error en la alternancia automatica del semaforo.");
+            }
+        }, autoToggleSeconds, autoToggleSeconds, TimeUnit.SECONDS);
+        System.out.println("Alternancia automatica activada cada " + autoToggleSeconds + " segundos.");
+    }
+
+    private static int parsePositiveInt(String value, int fallback) {
+        try {
+            int parsed = Integer.parseInt(value);
+            return parsed > 0 ? parsed : fallback;
+        } catch (NumberFormatException e) {
+            return fallback;
+        }
     }
 }

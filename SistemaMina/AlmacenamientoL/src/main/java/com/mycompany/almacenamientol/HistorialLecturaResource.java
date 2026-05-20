@@ -4,6 +4,8 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Sorts;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -26,24 +28,28 @@ public class HistorialLecturaResource {
 
     @GET
     @Path("/historial/congestiones")
+    @PermitAll
     public List<String> obtenerCongestiones() {
         return leerPayloads("historial_congestiones");
     }
 
     @GET
     @Path("/historial/productos")
+    @PermitAll
     public List<String> obtenerProductos() {
         return leerPayloads("historial_productos");
     }
 
     @GET
     @Path("/reportes/congestiones")
+    @RolesAllowed("GERENCIA_CONGESTIONES")
     public List<String> obtenerReporteCongestiones() {
         return leerPayloads("historial_congestiones");
     }
 
     @GET
     @Path("/reportes/productos")
+    @RolesAllowed("GERENCIA_PRODUCTOS")
     public List<String> obtenerReporteProductos() {
         return leerPayloads("historial_productos");
     }

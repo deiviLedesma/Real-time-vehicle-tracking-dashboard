@@ -1,5 +1,7 @@
 package com.mycompany.vehiculo;
 
+import ch.hsr.geohash.GeoHash;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.UUID;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -14,6 +16,11 @@ public class Vehiculo {
         String mqttPort = System.getenv().getOrDefault("MQTT_PORT", "1883");
         String mqttUser = System.getenv().getOrDefault("MQTT_USER", "guest");
         String mqttPassword = System.getenv().getOrDefault("MQTT_PASSWORD", "guest");
+        double latActual = Double.parseDouble(System.getenv().getOrDefault("LAT_INICIAL", "27.481000"));
+        double lonActual = Double.parseDouble(System.getenv().getOrDefault("LON_INICIAL", "-109.931000"));
+        double pasoLatitud = Double.parseDouble(System.getenv().getOrDefault("PASO_LATITUD", "0.00002"));
+        int geohashPrecision = Integer.parseInt(System.getenv().getOrDefault("GEOHASH_PRECISION", "7"));
+        int totalShards = Integer.parseInt(System.getenv().getOrDefault("CONGESTIONES_SHARDS", "2"));
         String publisherId = UUID.randomUUID().toString();
 
         try {
@@ -29,35 +36,41 @@ public class Vehiculo {
             publisher.connect(options);
             System.out.println("Vehiculo " + idVehiculo + " conectado a RabbitMQ.");
 
-            // Coordenadas iniciales
-            double latActual = 27.4841; 
-            double lonActual = -109.9300;
-
             while (true) {
                 // Avanzar un poquito hacia el NORTE
-                latActual += 0.00002; 
+                latActual += pasoLatitud;
                 long timestamp = System.currentTimeMillis();
 
+                String geohash = GeoHash.geoHashStringWithCharacterPrecision(
+                        latActual,
+                        lonActual,
+                        geohashPrecision
+                );
+                int shard = Math.floorMod(geohash.hashCode(), totalShards) + 1;
+
                 String payload = String.format(Locale.US,
-                        "{\"latitud\": %.6f, \"longitud\": %.6f, \"id\": \"%s\", \"timestamp\": %d}",
+                        "{\"latitud\": %.6f, \"longitud\": %.6f, \"id\": \"%s\", \"timestamp\": %d, \"geohash\": \"%s\", \"shard\": %d}",
                         latActual,
                         lonActual,
                         idVehiculo,
-                        timestamp);
+                        timestamp,
+                        geohash,
+                        shard);
 
                 if (publisher.isConnected()) {
-                    MqttMessage msgPosicion = new MqttMessage(payload.getBytes());
+                    MqttMessage msgPosicion = new MqttMessage(payload.getBytes(StandardCharsets.UTF_8));
                     msgPosicion.setQos(0);
-                    // topic "mineria/vehiculos/posicion" en cola es "mineria.vehiculos.posicion"
-                    publisher.publish("mineria/vehiculos/posicion", msgPosicion);
 
-                    MqttMessage msgPersistencia = new MqttMessage("hierro cargamento".getBytes());
+                    String topicPosicion = "mineria/vehiculos/posicion/shard-" + shard + "/" + geohash;
+                    publisher.publish(topicPosicion, msgPosicion);
+
+                    MqttMessage msgPersistencia = new MqttMessage("hierro cargamento".getBytes(StandardCharsets.UTF_8));
                     msgPersistencia.setQos(1);
 
                     String topicPersistencia = "mina/vehiculos/descarga/" + idVehiculo;
                     publisher.publish(topicPersistencia, msgPersistencia);
 
-                    System.out.println("Enviado -> Posicion: " + payload);
+                    System.out.println("Enviado -> Topic: " + topicPosicion + " | Payload: " + payload);
                 } else {
                     System.out.println("Sin senal... posicion perdida.");
                 }

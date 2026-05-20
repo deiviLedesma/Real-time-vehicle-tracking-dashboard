@@ -1,0 +1,75 @@
+{
+  "realm": "mvts",
+  "enabled": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "GERENCIA_CONGESTIONES"
+      },
+      {
+        "name": "GERENCIA_PRODUCTOS"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "almacenamiento-l",
+      "name": "almacenamiento-l",
+      "enabled": true,
+      "bearerOnly": true,
+      "protocol": "openid-connect"
+    },
+    {
+      "clientId": "mvts-gerencia-cli",
+      "name": "mvts-gerencia-cli",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect"
+    }
+  ],
+  "users": [
+    {
+      "username": "gerencia-congestiones",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Gerencia",
+      "lastName": "Congestiones",
+      "email": "gerencia-congestiones@mvts.local",
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "gerencia123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "GERENCIA_CONGESTIONES",
+        "GERENCIA_PRODUCTOS"
+      ]
+    },
+    {
+      "username": "gerencia-productos",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Gerencia",
+      "lastName": "Productos",
+      "email": "gerencia-productos@mvts.local",
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "gerencia123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "GERENCIA_PRODUCTOS",
+        "GERENCIA_CONGESTIONES"
+      ]
+    }
+  ]
+}

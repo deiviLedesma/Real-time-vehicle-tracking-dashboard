@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.grpc.GrpcClient;
 import io.quarkus.runtime.StartupEvent;
+import io.smallrye.common.annotation.Blocking;
+import io.smallrye.reactive.messaging.rabbitmq.IncomingRabbitMQMetadata;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
@@ -24,6 +26,8 @@ import org.mina.topologia.grpc.TopologiaServiceGrpc;
 
 @ApplicationScoped
 public class Congestiones {
+
+    private final String instanceId = System.getenv().getOrDefault("INSTANCE_ID", "congestiones");
 
     @GrpcClient("cliente-notificaciones")
     MutinyNotificacionesServiceGrpc.MutinyNotificacionesServiceStub notificacionesAsyncClient;
@@ -45,22 +49,24 @@ public class Congestiones {
     private final Map<String, EstadoVehiculo> vehiculos = new ConcurrentHashMap<>();
     private final Map<String, Semaforo> semaforos = new ConcurrentHashMap<>();
     private final Map<String, Set<String>> vehiculosPorSector = new ConcurrentHashMap<>();
+    private final Map<String, String> estadosPendientesSemaforo = new ConcurrentHashMap<>();
+    private volatile long ultimoIntentoTopologiaMs = 0L;
     
     private static final long COOLDOWN_ALERTAS_MS = 60000; 
     private final Map<String, Long> ultimaAlertaPorSemaforo = new ConcurrentHashMap<>();
 
     void onStart(@Observes StartupEvent ev) {
-        System.out.println(" [*] Microservicio Congestiones inicializado.");
+        System.out.println(" [" + instanceId + "] Microservicio Congestiones inicializado.");
         analizarTraficoMina();
     }
 
     public void analizarTraficoMina() {
-        System.out.println(" [*] Solicitando topologia a SemaforosTopologia via gRPC...");
+        System.out.println(" [" + instanceId + "] Solicitando topologia a SemaforosTopologia via gRPC...");
         try {
             TopologiaProto.EmptyRequest request = TopologiaProto.EmptyRequest.newBuilder().build();
             TopologiaProto.SemaforoListResponse response = topologiaClient.getSemaforos(request);
 
-            System.out.println(" [OK] Topologia recibida con " + response.getSemaforosCount() + " semaforos.");
+            System.out.println(" [" + instanceId + "] Topologia recibida con " + response.getSemaforosCount() + " semaforos.");
 
             for (TopologiaProto.Semaforo semaforoDto : response.getSemaforosList()) {
                 // Generar Geohash
@@ -75,23 +81,27 @@ public class Congestiones {
                 );
                 
                 semaforos.put(semaforoObj.id, semaforoObj);
+                aplicarEstadoPendienteSiExiste(semaforoObj.id, semaforoObj);
 
-                System.out.printf("     -> Semaforo [%s]: Sector Geohash [%s]%n", semaforoObj.id, geohash);
+                System.out.printf(" [" + instanceId + "] -> Semaforo [%s]: Sector Geohash [%s]%n", semaforoObj.id, geohash);
             }
         } catch (Exception e) {
-            System.err.println(" [X] Error al contactar al servidor gRPC: " + e.getMessage());
+            System.err.println(" [" + instanceId + "] Error al contactar al servidor gRPC: " + e.getMessage());
         }
     }
 
     @Incoming("vehiculos-in")
+    @Blocking
     public CompletionStage<Void> recibirGpsVehiculo(Message<byte[]> mensaje) {
         try {
+            reintentarTopologiaSiHaceFalta();
+
             String mensajeGps = new String(mensaje.getPayload(), StandardCharsets.UTF_8);
             if (!mensajeGps.trim().startsWith("{")) {
                 return mensaje.ack();
             }
 
-            System.out.println("GpsVehiculo recibido");
+            System.out.println("[" + instanceId + "] GpsVehiculo recibido");
             
             JsonNode nodo = mapper.readTree(mensajeGps);
             String idVehiculo = nodo.path("id").asText("");
@@ -127,10 +137,67 @@ public class Congestiones {
 
             return mensaje.ack();
         } catch (Exception e) {
-            System.err.println(" [X] Error procesando GPS del vehiculo.");
+            System.err.println(" [" + instanceId + "] Error procesando GPS del vehiculo.");
             e.printStackTrace();
             return mensaje.nack(e);
         }
+    }
+
+    @Incoming("semaforos-in")
+    @Blocking
+    public CompletionStage<Void> recibirEstadoSemaforo(Message<byte[]> mensaje) {
+        try {
+            String estado = new String(mensaje.getPayload(), StandardCharsets.UTF_8).trim().toUpperCase();
+            String routingKey = mensaje.getMetadata(IncomingRabbitMQMetadata.class)
+                    .map(IncomingRabbitMQMetadata::getRoutingKey)
+                    .orElse("");
+
+            String[] partes = routingKey.split("\\.");
+            if (partes.length >= 3) {
+                String idSemaforo = partes[1];
+                Semaforo semaforo = semaforos.get(idSemaforo);
+                if (semaforo != null) {
+                    actualizarEstadoSemaforo(idSemaforo, semaforo, estado);
+                } else {
+                    estadosPendientesSemaforo.put(idSemaforo, estado);
+                    System.out.println(" [" + instanceId + "] Estado recibido para semaforo desconocido " + idSemaforo + ": " + estado);
+                }
+            }
+
+            return mensaje.ack();
+        } catch (Exception e) {
+            System.err.println(" [" + instanceId + "] Error procesando estado de semaforo.");
+            e.printStackTrace();
+            return mensaje.nack(e);
+        }
+    }
+
+    private void reintentarTopologiaSiHaceFalta() {
+        if (!semaforos.isEmpty()) {
+            return;
+        }
+
+        long ahora = System.currentTimeMillis();
+        if (ahora - ultimoIntentoTopologiaMs < 5000) {
+            return;
+        }
+
+        ultimoIntentoTopologiaMs = ahora;
+        System.out.println(" [" + instanceId + "] Reintentando carga de topologia...");
+        analizarTraficoMina();
+    }
+
+    private void aplicarEstadoPendienteSiExiste(String idSemaforo, Semaforo semaforo) {
+        String estadoPendiente = estadosPendientesSemaforo.remove(idSemaforo);
+        if (estadoPendiente != null) {
+            actualizarEstadoSemaforo(idSemaforo, semaforo, estadoPendiente);
+            System.out.println(" [" + instanceId + "] Estado pendiente aplicado para semaforo " + idSemaforo);
+        }
+    }
+
+    private void actualizarEstadoSemaforo(String idSemaforo, Semaforo semaforo, String estado) {
+        semaforo.enRojo = "ROJO".equals(estado);
+        System.out.println(" [" + instanceId + "] Estado de semaforo " + idSemaforo + " actualizado a " + estado);
     }
 
     private void evaluarCongestionSiAplica(String geohash, String direccionCamion) {
@@ -160,7 +227,7 @@ public class Congestiones {
                             reportarCongestion("Congestion en semaforo " + semaforo.id + ". Camiones: " + camionesLentos);
                         } 
                         else {
-                            System.out.println(" [Debounce] Congestion activa en " + semaforo.id + 
+                            System.out.println(" [" + instanceId + "] [Debounce] Congestion activa en " + semaforo.id + 
                                                " detectada, pero ignorando por cooldown.");
                         }
                     }
@@ -177,14 +244,14 @@ public class Congestiones {
 
         notificacionesAsyncClient.enviarAlerta(request)
                 .subscribe().with(
-                        respuesta -> System.out.println(" [OK Async] Alerta enviada para " + idSemaforo),
-                        error -> System.err.println(" [X Async] Fallo: " + error.getMessage())
+                        respuesta -> System.out.println(" [" + instanceId + "] [OK Async] Alerta enviada para " + idSemaforo),
+                        error -> System.err.println(" [" + instanceId + "] [X Async] Fallo: " + error.getMessage())
                 );
     }
 
     public void reportarCongestion(String datosCongestion) {
         emisor.send(datosCongestion);
-        System.out.println("[Enviado] Alerta al exchange: " + datosCongestion);
+        System.out.println("[" + instanceId + "] [Enviado] Alerta al exchange: " + datosCongestion);
     }
 
     // --- INTERNO ---

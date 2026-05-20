@@ -1,0 +1,63 @@
+services:
+  vehiculo-01:
+    build:
+      context: ./SistemaMina
+      dockerfile: Vehiculo/Dockerfile
+    image: mvts-vehiculo-aislado
+    container_name: mvts-vehiculo-aislado-01
+    restart: unless-stopped
+    environment:
+      MQTT_HOST: mvts-rabbit-aislado
+      MQTT_PORT: "1883"
+      MQTT_USER: mvts
+      MQTT_PASSWORD: mvts123
+      CONGESTIONES_SHARDS: "2"
+      VEHICULO_ID: camion-01
+      LAT_INICIAL: "27.481000"
+      LON_INICIAL: "-109.931000"
+      PASO_LATITUD: "0.00002"
+    networks:
+      - backbone
+
+  vehiculo-02:
+    image: mvts-vehiculo-aislado
+    container_name: mvts-vehiculo-aislado-02
+    restart: unless-stopped
+    environment:
+      MQTT_HOST: mvts-rabbit-aislado
+      MQTT_PORT: "1883"
+      MQTT_USER: mvts
+      MQTT_PASSWORD: mvts123
+      CONGESTIONES_SHARDS: "2"
+      VEHICULO_ID: camion-02
+      LAT_INICIAL: "27.481000"
+      LON_INICIAL: "-109.931000"
+      PASO_LATITUD: "0.00002"
+    networks:
+      - backbone
+    depends_on:
+      - vehiculo-01
+
+  vehiculo-03:
+    image: mvts-vehiculo-aislado
+    container_name: mvts-vehiculo-aislado-03
+    restart: unless-stopped
+    environment:
+      MQTT_HOST: mvts-rabbit-aislado
+      MQTT_PORT: "1883"
+      MQTT_USER: mvts
+      MQTT_PASSWORD: mvts123
+      CONGESTIONES_SHARDS: "2"
+      VEHICULO_ID: camion-03
+      LAT_INICIAL: "27.481000"
+      LON_INICIAL: "-109.931000"
+      PASO_LATITUD: "0.00002"
+    networks:
+      - backbone
+    depends_on:
+      - vehiculo-01
+
+networks:
+  backbone:
+    external: true
+    name: mvts-backbone-net

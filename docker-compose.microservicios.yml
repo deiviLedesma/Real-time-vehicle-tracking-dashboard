@@ -63,12 +63,13 @@ services:
       - microservices-net
       - backbone-net
 
-  congestiones:
+  congestiones-1:
     build:
       context: ./SistemaMina
       dockerfile: Congestiones/Dockerfile
     restart: unless-stopped
     environment:
+      INSTANCE_ID: congestiones-1
       HTTP_PORT: 8082
       GRPC_PORT: 9001
       TOPOLOGIA_HOST: semaforos-topologia
@@ -79,8 +80,52 @@ services:
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: mvts
       RABBITMQ_PASS: mvts123
+      VEHICULOS_EXCHANGE: amq.topic
+      VEHICULOS_EXCHANGE_TYPE: topic
+      VEHICULOS_ROUTING_KEYS: mineria.vehiculos.posicion.shard-1.#
+      VEHICULOS_QUEUE_NAME: cola.congestiones.vehiculos.1
+      SEMAFOROS_EXCHANGE: amq.topic
+      SEMAFOROS_EXCHANGE_TYPE: topic
+      SEMAFOROS_ROUTING_KEYS: semaforos.#.estado
+      SEMAFOROS_QUEUE_NAME: cola.congestiones.semaforos.1
     ports:
       - "8082:8082"
+    depends_on:
+      semaforos-topologia:
+        condition: service_started
+      notificaciones:
+        condition: service_started
+    networks:
+      - microservices-net
+      - backbone-net
+
+  congestiones-2:
+    build:
+      context: ./SistemaMina
+      dockerfile: Congestiones/Dockerfile
+    restart: unless-stopped
+    environment:
+      INSTANCE_ID: congestiones-2
+      HTTP_PORT: 8082
+      GRPC_PORT: 9001
+      TOPOLOGIA_HOST: semaforos-topologia
+      TOPOLOGIA_PORT: 8081
+      NOTIFICACIONES_HOST: notificaciones
+      NOTIFICACIONES_PORT: 8083
+      RABBITMQ_HOST: mvts-rabbit-aislado
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: mvts
+      RABBITMQ_PASS: mvts123
+      VEHICULOS_EXCHANGE: amq.topic
+      VEHICULOS_EXCHANGE_TYPE: topic
+      VEHICULOS_ROUTING_KEYS: mineria.vehiculos.posicion.shard-2.#
+      VEHICULOS_QUEUE_NAME: cola.congestiones.vehiculos.2
+      SEMAFOROS_EXCHANGE: amq.topic
+      SEMAFOROS_EXCHANGE_TYPE: topic
+      SEMAFOROS_ROUTING_KEYS: semaforos.#.estado
+      SEMAFOROS_QUEUE_NAME: cola.congestiones.semaforos.2
+    ports:
+      - "8084:8082"
     depends_on:
       semaforos-topologia:
         condition: service_started

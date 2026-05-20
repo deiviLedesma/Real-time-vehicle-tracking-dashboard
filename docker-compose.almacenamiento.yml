@@ -1,0 +1,71 @@
+name: mvts-almacenamiento
+
+services:
+  mongo-router:
+    image: mongo:7
+    command: ["mongod", "--bind_ip_all"]
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-router-data:/data/db
+    networks:
+      - almacenamiento-net
+
+  almacenamiento-e:
+    build:
+      context: ./SistemaMina
+      dockerfile: AlmacenamientoE/Dockerfile
+    restart: unless-stopped
+    environment:
+      HTTP_PORT: 8086
+      MONGODB_URL: mongodb://mongo-router:27017
+      MONGODB_DATABASE: mvts_almacenamiento
+      RABBITMQ_HOST: host.docker.internal
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: mvts
+      RABBITMQ_PASS: mvts123
+    ports:
+      - "8086:8086"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - mongo-router
+    networks:
+      - almacenamiento-net
+
+  almacenamiento-l:
+    build:
+      context: ./SistemaMina
+      dockerfile: AlmacenamientoL/Dockerfile
+    restart: unless-stopped
+    environment:
+      HTTP_PORT: 8085
+      MONGODB_URL: mongodb://mongo-router:27017
+      MONGODB_DATABASE: mvts_almacenamiento
+    ports:
+      - "8085:8085"
+    depends_on:
+      - mongo-router
+    networks:
+      - almacenamiento-net
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - almacenamiento-e
+      - almacenamiento-l
+    ports:
+      - "80:80"
+    networks:
+      - almacenamiento-net
+
+networks:
+  almacenamiento-net:
+    driver: bridge
+
+volumes:
+  mongo-router-data:

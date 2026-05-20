@@ -12,8 +12,10 @@
         <module>Congestiones</module>
         <module>SemaforosTopologia</module>
         <module>Notificaciones</module>
-        <module>Almacenamiento</module>
-        <module>Gerencia</module>
+        <module>AlmacenamientoE</module>
+        <module>AlmacenamientoL</module>
+        <module>GerenciaCongestiones</module>
+        <module>GerenciaProductos</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

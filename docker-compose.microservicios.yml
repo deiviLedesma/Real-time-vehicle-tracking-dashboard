@@ -1,0 +1,101 @@
+name: mvts-microservicios
+
+services:
+  mysql-topologia:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mvts_topologia
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql-topologia-data:/var/lib/mysql
+      - ./mysql/semaforos-init.sql:/docker-entrypoint-initdb.d/01-semaforos-init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - microservices-net
+
+  semaforos-topologia:
+    build:
+      context: ./SistemaMina
+      dockerfile: SemaforosTopologia/Dockerfile
+    restart: unless-stopped
+    environment:
+      HTTP_PORT: 8081
+      GRPC_PORT: 9000
+      MYSQL_HOST: mysql-topologia
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: mvts_topologia
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      RABBITMQ_HOST: host.docker.internal
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: mvts
+      RABBITMQ_PASS: mvts123
+    ports:
+      - "8081:8081"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      mysql-topologia:
+        condition: service_healthy
+    networks:
+      - microservices-net
+
+  notificaciones:
+    build:
+      context: ./SistemaMina
+      dockerfile: Notificaciones/Dockerfile
+    restart: unless-stopped
+    environment:
+      HTTP_PORT: 8083
+      RABBITMQ_HOST: host.docker.internal
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: mvts
+      RABBITMQ_PASS: mvts123
+    ports:
+      - "8083:8083"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - microservices-net
+
+  congestiones:
+    build:
+      context: ./SistemaMina
+      dockerfile: Congestiones/Dockerfile
+    restart: unless-stopped
+    environment:
+      HTTP_PORT: 8082
+      GRPC_PORT: 9001
+      TOPOLOGIA_HOST: semaforos-topologia
+      TOPOLOGIA_PORT: 8081
+      NOTIFICACIONES_HOST: notificaciones
+      NOTIFICACIONES_PORT: 8083
+      RABBITMQ_HOST: host.docker.internal
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: mvts
+      RABBITMQ_PASS: mvts123
+    ports:
+      - "8082:8082"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      semaforos-topologia:
+        condition: service_started
+      notificaciones:
+        condition: service_started
+    networks:
+      - microservices-net
+
+networks:
+  microservices-net:
+    driver: bridge
+
+volumes:
+  mysql-topologia-data:

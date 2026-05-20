@@ -11,6 +11,5 @@ FROM eclipse-temurin:21-jre
 WORKDIR /app
 
 COPY --from=build /workspace/GerenciaProductos/target/*.jar app.jar
-COPY --from=build /workspace/GerenciaProductos/target/dependency ./dependency
 
-ENTRYPOINT ["java", "-cp", "app.jar:dependency/*", "com.mycompany.gerenciaproductos.GerenciaProductos"]
+ENTRYPOINT ["java", "-cp", "app.jar", "com.mycompany.gerenciaproductos.GerenciaProductos"]

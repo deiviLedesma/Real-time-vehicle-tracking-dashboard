@@ -33,19 +33,18 @@ services:
       MYSQL_DATABASE: mvts_topologia
       MYSQL_USER: root
       MYSQL_PASSWORD: root
-      RABBITMQ_HOST: host.docker.internal
+      RABBITMQ_HOST: mvts-rabbit-aislado
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: mvts
       RABBITMQ_PASS: mvts123
     ports:
       - "8081:8081"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     depends_on:
       mysql-topologia:
         condition: service_healthy
     networks:
       - microservices-net
+      - backbone-net
 
   notificaciones:
     build:
@@ -54,16 +53,15 @@ services:
     restart: unless-stopped
     environment:
       HTTP_PORT: 8083
-      RABBITMQ_HOST: host.docker.internal
+      RABBITMQ_HOST: mvts-rabbit-aislado
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: mvts
       RABBITMQ_PASS: mvts123
     ports:
       - "8083:8083"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     networks:
       - microservices-net
+      - backbone-net
 
   congestiones:
     build:
@@ -77,14 +75,12 @@ services:
       TOPOLOGIA_PORT: 8081
       NOTIFICACIONES_HOST: notificaciones
       NOTIFICACIONES_PORT: 8083
-      RABBITMQ_HOST: host.docker.internal
+      RABBITMQ_HOST: mvts-rabbit-aislado
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: mvts
       RABBITMQ_PASS: mvts123
     ports:
       - "8082:8082"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     depends_on:
       semaforos-topologia:
         condition: service_started
@@ -92,10 +88,14 @@ services:
         condition: service_started
     networks:
       - microservices-net
+      - backbone-net
 
 networks:
   microservices-net:
     driver: bridge
+  backbone-net:
+    external: true
+    name: mvts-backbone-net
 
 volumes:
   mysql-topologia-data:

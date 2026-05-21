@@ -38,11 +38,11 @@ public class frmGerenciaProductos extends javax.swing.JFrame {
     private String obtenerToken() throws Exception {
         String TOKEN_URL = "http://" + txtHost.getText()
                 + ":8180/realms/mvts/protocol/openid-connect/token";
-
+        
         String form = "grant_type=password"
-                + "&client_id=mvts-gerencia-cli"
-                + "&username=gerencia-productos"
-                + "&password=gerencia123";
+                + "&client_id=" + java.net.URLEncoder.encode("mvts-gerencia-cli", java.nio.charset.StandardCharsets.UTF_8)
+                + "&username=" + java.net.URLEncoder.encode("gerencia-productos", java.nio.charset.StandardCharsets.UTF_8)
+                + "&password=" + java.net.URLEncoder.encode("gerencia123", java.nio.charset.StandardCharsets.UTF_8);
 
         java.net.http.HttpClient cliente = java.net.http.HttpClient.newHttpClient();
         java.net.http.HttpRequest req = java.net.http.HttpRequest.newBuilder()

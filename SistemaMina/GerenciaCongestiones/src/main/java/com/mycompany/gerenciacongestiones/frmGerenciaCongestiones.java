@@ -40,9 +40,9 @@ public class frmGerenciaCongestiones extends javax.swing.JFrame {
                 + ":8180/realms/mvts/protocol/openid-connect/token";
 
         String form = "grant_type=password"
-                + "&client_id=mvts-gerencia-cli"
-                + "&username=gerencia-congestiones"
-                + "&password=gerencia123";
+                + "&client_id=" + java.net.URLEncoder.encode("mvts-gerencia-cli", java.nio.charset.StandardCharsets.UTF_8)
+                + "&username=" + java.net.URLEncoder.encode("gerencia-congestiones", java.nio.charset.StandardCharsets.UTF_8)
+                + "&password=" + java.net.URLEncoder.encode("gerencia123", java.nio.charset.StandardCharsets.UTF_8);
 
         java.net.http.HttpClient cliente = java.net.http.HttpClient.newHttpClient();
         java.net.http.HttpRequest req = java.net.http.HttpRequest.newBuilder()
@@ -96,7 +96,7 @@ public class frmGerenciaCongestiones extends javax.swing.JFrame {
                 }
 
                 String json = llamarEndpoint(tokenCache);
-                
+
                 json = json.trim().replaceAll("^\\[|\\]$", "");
                 String[] items = json.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
 
